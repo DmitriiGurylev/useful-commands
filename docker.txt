@@ -1,0 +1,156 @@
+docker --help 
+
+docker build {path} - создать образ, где {path} - путь к директории, в которой содержится Dockerfile
+docker build --no-cache=True {path} - собрать образ без кэширования
+
+docker ps - список поднятиых контейнеров
+docker ps -a - список всех контейнеров
+docker ps -q - список ID всех контейнеров
+docker ps -s - список поднятых контейнеров с указанием размера
+
+docker create {name} - создать контейнер из образа, где name - CONTAINER ID или NAMES
+docker start {name} - запустить остановленной контейнер, где name - CONTAINER ID или NAMES
+docker run {name} - создать и запустить контейнер на основе образа
+docker run -p {port1}:{port2} {name} - создать и запустить контейнер: 
+	port1 - порт для запуска на локальной машине, 
+	port2 - порт внутри контейнера  
+	
+docker stop {name} - остановить контейнер
+docker stop -t {sec} {name} - остановить контейнер через время sec
+docker kill {name} - остановить контейнер принудительно
+docker restart {name} - перезапустить контейнер, где name - CONTAINER ID или NAMES  
+
+docker images - список образов
+docker image build -t {name} - собрать образ с именем {name}; в данной директории должен быть Dockerfile
+docker images -q - список ID образов
+docker image ls - список образов с указанием размера
+docker image history {name} - узнать размеры промежуточных образов, из которых собран указанный
+docker image inspect {name} - узнать подробные сведения об образе
+
+docker rm {name} - удалить контейнер, где name - CONTAINER ID или NAMES
+docker rm {name1} {name2} - удалить контейнеры
+docker container prune - удалить контейнеры, завершившие работу
+docker system prune - удалить неиспользуемые контейнеры, которым не назначено имя и тег
+
+docker volume ls - список томов
+docker volume inspect {name} - исследовать том
+
+docker volume rm {name} - удалить том
+docker volume prune - удалить неиспользуемые тома
+
+
+
+docker-compose up -d {name} - поднять контейнер
+  
+docker rmi {name} - удалить образ, где name - REPOSITORY
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Docker file to create IMAGE. Examples:
+
+# set parent image
+FROM python:3.7.2-alpine3.8
+
+# describes metadata
+LABEL maintainer="jeffmshale@gmail.com"
+
+# executes command and creates an image lay
+RUN apk add --update git
+
+# set a working directory for the instruction
+WORKDIR /usr/src/my_app_directory
+
+# copy files to container
+COPY . .
+
+# set variables to send to Docker while creating image
+ARG my_var=my_default_value
+
+# provide a command with arguments to invoke while running the container
+ENTRYPOINT ["python", "./app/my_script.py", "my_var"]
+
+# determine a port which image uses
+EXPOSE 8000
+
+# creater mount point for work with constant storage
+VOLUME /my_volume
+
+/////////////////////////////////////
+
+FROM python:3.7.2-alpine3.8
+
+LABEL maintainer="jeffmshale@gmail.com"
+
+ENV ADMIN="jeff"
+# set constant environment variables
+
+RUN apk update && apk upgrade && apk add bash
+
+COPY . ./app
+# copy files to container too
+
+ADD https://raw.githubusercontent.com/discdiver/pachy-vid/master/sample_vids/vid1.mp4 \
+/my_app_directory
+
+RUN ["mkdir", "/a_directory"]
+
+# executes command when we run the image
+CMD ["python", "./my_script.py"]
+
+/////////////////////////////////////
+
+FROM golang:1.7.3 AS build
+WORKDIR /go/src/github.com/alexellis/href-counter/
+RUN go get -d -v golang.org/x/net/html
+COPY app.go .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=build /go/src/github.com/alexellis/href-counter/app .
+CMD ["./app"]
+
+/////////////////////////////////////
+
+Next in terminal type: "docker build {path}"
+IMAGE is available for reading only.
+
+Docker file begins with "FROM ..." or "ARG ... FROM ...".
+
+LABEL instruction let user to add metadata to the image.
+
+ENV instruction let user to set variables which will be available while container is running.
+
+RUN instruction let user to create lay while image is being built.
+After its execution new lay is added to the image.
+
+COPY instruction tells Docker it need take dirs and files from local dir and add them to target dir of image.
+If target dir doesn't exist, the dir will be created.
+
+ADD instruction let to solve COPY tasks but it can do other actions.
+Using ADD instruction we can add files loaded from remoted sources and unzip files *.tar.
+It is better to use COPY.
+
+CMD provides Docker with command which must be executed.
+Results of this command aren't added to the image.
+The only CMD instruction can be used.
+
+WORKDI instruction let to edit working dir of the container.
+COPY, ADD, RUN, CMD works with this instruction.
+
+ARG instructionlet to set variable which value may be sent from command line  to the image while building.
+
+ENTRYPOINT instruction let to set command with arguments which must be executed when starting container.
+It is like CMD but ENTRYPOINT parameters aren't overwritten if the container is running with command line parameters.
+ENTRYPOINT ["executable", "param1", "param2"]
+
+EXPOSE instruction indicates which ports must be opened to connect with working container.
+This instruction doesn't open ports.
+To open ports and set redirection it needs to execute command: docker run -p.
+EXPOSE <port> [<port>/<protocol>...]
+ EXPOSE 80/udp
+EXPOSE 80/tcp
+
+VOLUME instruction let to indicate place which will be used to constant storage of files.
+
+
