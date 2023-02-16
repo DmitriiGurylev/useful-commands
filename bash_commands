@@ -1,0 +1,3 @@
+alias apt_update='sudo apt update -y && sudo apt upgrade -y && sudo apt-get update -y && sudo apt-get upgrade -y && sudo apt-get -y dist-upgrade && sudo apt autoremove'
+alias docker_rm_all_containers='docker rm $(docker ps -aq)'
+alias docker_rm_dangling_images='docker image rm $(docker image ls -f dangling=true -q)'
