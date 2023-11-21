@@ -1,0 +1,5 @@
+добавлять файлы на HDFS:
+curl -i -X PUT "http://*server*:*port*/webhdfs/v1/*file_name*?op=CREATE&user.name=*user*&createparent=true"
+
+загрузить на HDFS существующий файл:
+curl -i -X PUT -T *local_file* "*server*:*port*/webhdfs/v1/*file_name*?op=CREATE&user.name=*user*&createparent=true&overwrite=false"
