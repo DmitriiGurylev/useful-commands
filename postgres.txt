@@ -1,0 +1,1 @@
+psql -U *user* -W *** -h *server* -p *port* -d *db*
