@@ -1,0 +1,11 @@
+show tables
+CREATE TABLE ...
+
+echo "CREATE TABLE ..." | \
+curl  'http://*clickhouse_server*:8123?user=*user*&password=*password*&database=*db*' \
+--data-binary @-
+
+curl \
+--user t2_cm_stats:Nj38dfn90dnA \
+-d 'select count(*) from t2_cm_stats.all_cm_contacts' \
+*clickhouse_server*:8123
